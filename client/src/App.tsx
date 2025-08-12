@@ -10,6 +10,7 @@ import Dashboard from "@/pages/dashboard";
 import Groups from "@/pages/groups";
 import Friends from "@/pages/friends";
 import Analytics from "@/pages/analytics";
+import InviteAccept from "@/pages/invite-accept";
 import OfflineIndicator from "@/components/layout/offline-indicator";
 
 function Router() {
@@ -25,6 +26,7 @@ function Router() {
           <Route path="/groups" component={Groups} />
           <Route path="/friends" component={Friends} />
           <Route path="/analytics" component={Analytics} />
+          <Route path="/invite/:inviteCode" component={InviteAccept} />
         </>
       )}
       <Route component={NotFound} />

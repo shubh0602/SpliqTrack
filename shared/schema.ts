@@ -32,6 +32,9 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
+  authProvider: varchar("auth_provider").default("replit"), // replit, google, guest
+  guestToken: varchar("guest_token"), // for guest users
+  isGuest: boolean("is_guest").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -321,3 +324,29 @@ export type Settlement = typeof settlements.$inferSelect;
 export type ExchangeRate = typeof exchangeRates.$inferSelect;
 export type Analytics = typeof analytics.$inferSelect;
 export type SyncQueue = typeof syncQueue.$inferSelect;
+
+// Invitations table for shareable links
+export const invitations = pgTable("invitations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  inviteCode: varchar("invite_code").unique().notNull(),
+  invitedBy: varchar("invited_by").references(() => users.id).notNull(),
+  inviteType: varchar("invite_type").notNull(), // friend, group, expense
+  targetId: varchar("target_id"), // group id or expense id if applicable
+  expiresAt: timestamp("expires_at").notNull(),
+  maxUses: integer("max_uses").default(1),
+  usedCount: integer("used_count").default(0),
+  isActive: boolean("is_active").default(true),
+  metadata: jsonb("metadata"), // additional invite data
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Invitation acceptances tracking
+export const invitationAcceptances = pgTable("invitation_acceptances", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  invitationId: varchar("invitation_id").references(() => invitations.id).notNull(),
+  acceptedBy: varchar("accepted_by").references(() => users.id).notNull(),
+  acceptedAt: timestamp("accepted_at").defaultNow(),
+});
+
+export type Invitation = typeof invitations.$inferSelect;
+export type InsertInvitation = typeof invitations.$inferInsert;

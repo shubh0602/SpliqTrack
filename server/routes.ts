@@ -303,6 +303,127 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Invitation routes
+  app.post('/api/invitations', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { inviteType, targetId, maxUses, expiresInHours, metadata } = req.body;
+      
+      const { invitationService } = await import('./services/invitationService');
+      const invitation = await invitationService.createInvitation({
+        invitedBy: userId,
+        inviteType,
+        targetId,
+        maxUses,
+        expiresInHours,
+        metadata,
+      });
+      
+      res.json({
+        ...invitation,
+        shareUrl: invitationService.generateShareableUrl(invitation.inviteCode, `${req.protocol}://${req.hostname}`)
+      });
+    } catch (error) {
+      console.error("Error creating invitation:", error);
+      res.status(500).json({ message: "Failed to create invitation" });
+    }
+  });
+
+  app.get('/api/invitations', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { code } = req.query;
+      
+      const { invitationService } = await import('./services/invitationService');
+      
+      if (code) {
+        // Get specific invitation by code
+        const invitation = await invitationService.getInvitationByCode(code);
+        if (!invitation) {
+          return res.status(404).json({ message: "Invitation not found or expired" });
+        }
+        res.json(invitation);
+      } else {
+        // Get user's invitations
+        const invitations = await invitationService.getUserInvitations(userId);
+        res.json(invitations);
+      }
+    } catch (error) {
+      console.error("Error fetching invitations:", error);
+      res.status(500).json({ message: "Failed to fetch invitations" });
+    }
+  });
+
+  app.post('/api/invitations/accept', async (req: any, res) => {
+    try {
+      const { inviteCode, guestRegistration } = req.body;
+      const { invitationService } = await import('./services/invitationService');
+      
+      let userId: string;
+      
+      if (req.isAuthenticated && req.isAuthenticated()) {
+        // Existing authenticated user
+        userId = req.user.claims.sub;
+      } else if (guestRegistration) {
+        // Create guest user
+        const guestUser = await invitationService.createGuestUserFromInvite(guestRegistration);
+        userId = guestUser.id;
+      } else {
+        return res.status(400).json({ message: "Authentication or guest registration required" });
+      }
+      
+      const result = await invitationService.acceptInvitation(inviteCode, userId);
+      
+      let redirectTo = "/";
+      let message = "Welcome to Spliq!";
+      
+      // Handle different invitation types
+      switch (result.invitation.inviteType) {
+        case "group":
+          if (result.invitation.targetId) {
+            redirectTo = `/groups/${result.invitation.targetId}`;
+            message = "You've joined the group!";
+          }
+          break;
+        case "expense":
+          if (result.invitation.targetId) {
+            redirectTo = `/expenses/${result.invitation.targetId}`;
+            message = "You've been added to the expense!";
+          }
+          break;
+        case "friend":
+          message = "You're now friends!";
+          break;
+      }
+      
+      res.json({ 
+        message, 
+        redirectTo,
+        invitation: result.invitation,
+        inviter: result.inviter,
+        isGuest: guestRegistration ? true : false
+      });
+    } catch (error) {
+      console.error("Error accepting invitation:", error);
+      res.status(400).json({ message: error.message || "Failed to accept invitation" });
+    }
+  });
+
+  app.delete('/api/invitations/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      
+      const { invitationService } = await import('./services/invitationService');
+      await invitationService.deactivateInvitation(id, userId);
+      
+      res.json({ message: "Invitation deactivated" });
+    } catch (error) {
+      console.error("Error deactivating invitation:", error);
+      res.status(500).json({ message: "Failed to deactivate invitation" });
+    }
+  });
+
   app.get('/api/settlements', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;

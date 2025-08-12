@@ -3,11 +3,13 @@ import { Button } from "@/components/ui/button";
 import AddExpenseModal from "@/components/modals/add-expense-modal";
 import CreateGroupModal from "@/components/modals/create-group-modal";
 import AddFriendModal from "@/components/modals/add-friend-modal";
+import InviteModal from "@/components/modals/invite-modal";
 
 export default function QuickActions() {
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
   const [isFriendModalOpen, setIsFriendModalOpen] = useState(false);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
   return (
     <>
@@ -29,6 +31,12 @@ export default function QuickActions() {
           className="bg-cred-light px-6 py-3 rounded-xl font-medium hover:bg-opacity-80 transition-all border border-gray-700"
         >
           <i className="fas fa-user-plus mr-2"></i>Add Friend
+        </Button>
+        <Button 
+          onClick={() => setIsInviteModalOpen(true)}
+          className="bg-purple-600 px-6 py-3 rounded-xl font-medium hover:bg-purple-700 transition-all border border-purple-500"
+        >
+          <i className="fas fa-share mr-2"></i>Share Invite
         </Button>
         <Button className="bg-green-gradient px-6 py-3 rounded-xl font-medium hover:opacity-90 transition-opacity">
           <i className="fas fa-check mr-2"></i>Settle Up
@@ -54,6 +62,12 @@ export default function QuickActions() {
         onClose={() => setIsFriendModalOpen(false)}
         onSubmit={() => setIsFriendModalOpen(false)}
         isLoading={false}
+      />
+
+      <InviteModal 
+        isOpen={isInviteModalOpen}
+        onClose={() => setIsInviteModalOpen(false)}
+        inviteType="friend"
       />
     </>
   );

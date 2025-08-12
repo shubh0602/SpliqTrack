@@ -1,6 +1,6 @@
 # Overview
 
-Spliq is a modern expense-sharing web application built with React, Express, and PostgreSQL. The application allows users to split expenses with friends and groups, track balances, and settle debts through an intuitive interface. It features Replit authentication, real-time balance tracking, and comprehensive expense management capabilities.
+Spliq is a modern expense-sharing web application built with React, Express, and PostgreSQL. The application allows users to split expenses with friends and groups, track balances, and settle debts through an intuitive interface. It features Replit authentication, real-time balance tracking, comprehensive expense management capabilities, and a flexible invitation system with shareable links supporting both authenticated and guest users.
 
 # User Preferences
 
@@ -27,7 +27,8 @@ Preferred communication style: Simple, everyday language.
 ## Data Storage Solutions
 - **Database**: PostgreSQL with Neon serverless connection pooling
 - **ORM**: Drizzle ORM for type-safe database operations and schema management
-- **Schema**: Comprehensive relational design supporting users, friendships, groups, expenses, and settlements
+- **Schema**: Comprehensive relational design supporting users, friendships, groups, expenses, settlements, and invitation system
+- **Invitation System**: Shareable links with flexible authentication (Google login or guest registration with name-only)
 - **Migrations**: Drizzle Kit for database schema versioning and deployment
 
 ## Authentication and Authorization
