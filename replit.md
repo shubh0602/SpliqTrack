@@ -6,6 +6,20 @@ Spliq is a modern expense-sharing web application built with React, Express, and
 
 Preferred communication style: Simple, everyday language.
 
+# Recent Changes
+
+## January 15, 2025
+- ✅ **Comprehensive Invitation System**: Implemented shareable links with flexible authentication
+- ✅ **Guest User Support**: Added name-only registration for quick access
+- ✅ **Multi-Currency Features**: Real-time exchange rates and currency conversion
+- ✅ **Advanced Splitting Options**: Equal, custom, percentage, and share-based splitting
+- ✅ **Analytics Dashboard**: Spending insights, charts, and comprehensive reporting
+- ✅ **Offline Sync**: Operation queuing with automatic sync when back online
+- ✅ **Data Export**: CSV and JSON export capabilities for user data
+- ✅ **Mobile Enhancement**: Improved responsive design with CRED-inspired UI
+- ✅ **Database Optimization**: Added invitation tables and guest user support
+- ✅ **Documentation**: Created comprehensive README, CONTRIBUTING, and CHANGELOG files
+
 # System Architecture
 
 ## Frontend Architecture
