@@ -72,11 +72,9 @@ export default function Dashboard() {
     return null;
   }
 
-  const { balances, recentExpenses, groups } = dashboardData || {
-    balances: { totalOwed: 0, totalOwing: 0, friendBalances: [] },
-    recentExpenses: [],
-    groups: []
-  };
+  const balances = dashboardData?.balances || { totalOwed: 0, totalOwing: 0, friendBalances: [] };
+  const recentExpenses = dashboardData?.recentExpenses || [];
+  const groups = dashboardData?.groups || [];
 
   return (
     <div className="min-h-screen bg-cred-dark text-white">

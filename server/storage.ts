@@ -404,6 +404,38 @@ export class DatabaseStorage implements IStorage {
 
     await db.insert(expenseCategories).values(categories).onConflictDoNothing();
   }
+
+  // Offline sync operations
+  async addToSyncQueue(userId: string, operation: {
+    operation: "create" | "update" | "delete";
+    entity: string;
+    entityId: string;
+    data: any;
+  }): Promise<void> {
+    await db.insert(syncQueue).values({
+      userId,
+      operation: operation.operation as any,
+      entity: operation.entity as any,
+      entityId: operation.entityId,
+      data: operation.data,
+      synced: false,
+    });
+  }
+
+  async getPendingSyncOperations(userId: string) {
+    return await db
+      .select()
+      .from(syncQueue)
+      .where(and(eq(syncQueue.userId, userId), eq(syncQueue.synced, false)))
+      .orderBy(syncQueue.createdAt);
+  }
+
+  async markSyncOperationComplete(operationId: string): Promise<void> {
+    await db
+      .update(syncQueue)
+      .set({ synced: true })
+      .where(eq(syncQueue.id, operationId));
+  }
 }
 
 export const storage = new DatabaseStorage();

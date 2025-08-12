@@ -194,6 +194,115 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Analytics routes
+  app.get('/api/analytics', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { period = "30", currency = "USD" } = req.query;
+      const { analyticsService } = await import('./services/analyticsService');
+      const analytics = await analyticsService.generateUserAnalytics(userId, parseInt(period), currency);
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching analytics:", error);
+      res.status(500).json({ message: "Failed to fetch analytics" });
+    }
+  });
+
+  // Currency routes
+  app.get('/api/currencies', isAuthenticated, async (req: any, res) => {
+    try {
+      const { currencyService } = await import('./services/currencyService');
+      const currencies = currencyService.getSupportedCurrencies();
+      res.json(currencies);
+    } catch (error) {
+      console.error("Error fetching currencies:", error);
+      res.status(500).json({ message: "Failed to fetch currencies" });
+    }
+  });
+
+  app.get('/api/exchange-rate', isAuthenticated, async (req: any, res) => {
+    try {
+      const { from, to } = req.query;
+      if (!from || !to) {
+        return res.status(400).json({ message: "Both 'from' and 'to' currencies are required" });
+      }
+      const { currencyService } = await import('./services/currencyService');
+      const rate = await currencyService.getExchangeRate(from, to);
+      res.json({ rate, from, to });
+    } catch (error) {
+      console.error("Error fetching exchange rate:", error);
+      res.status(500).json({ message: "Failed to fetch exchange rate" });
+    }
+  });
+
+  // Data export routes
+  app.get('/api/export/expenses', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { format = "csv", startDate, endDate } = req.query;
+      
+      const expenses = await storage.getExpenses(userId);
+      
+      if (format === "csv") {
+        const csvData = [
+          ["Date", "Description", "Amount", "Currency", "Category", "Paid By", "Group", "Your Share"],
+          ...expenses.map(expense => [
+            expense.expense.createdAt?.toISOString().split('T')[0] || '',
+            expense.expense.description,
+            expense.expense.amount,
+            expense.expense.currency || 'USD',
+            expense.category?.name || 'Uncategorized',
+            `${expense.payer.firstName} ${expense.payer.lastName}`,
+            expense.group?.name || 'Personal',
+            expense.splits.find(s => s.userId === userId)?.amount || '0'
+          ])
+        ].map(row => row.join(',')).join('\n');
+        
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename="expenses.csv"');
+        res.send(csvData);
+      } else {
+        res.json(expenses);
+      }
+    } catch (error) {
+      console.error("Error exporting expenses:", error);
+      res.status(500).json({ message: "Failed to export expenses" });
+    }
+  });
+
+  // Offline sync routes
+  app.post('/api/sync/queue', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { operations } = req.body;
+      
+      // Process offline operations
+      for (const operation of operations) {
+        await storage.addToSyncQueue(userId, operation);
+      }
+      
+      res.json({ message: "Operations queued for sync", count: operations.length });
+    } catch (error) {
+      console.error("Error processing sync queue:", error);
+      res.status(500).json({ message: "Failed to process sync queue" });
+    }
+  });
+
+  app.get('/api/sync/status', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const pendingOperations = await storage.getPendingSyncOperations(userId);
+      res.json({ 
+        hasPendingOperations: pendingOperations.length > 0,
+        pendingCount: pendingOperations.length,
+        operations: pendingOperations
+      });
+    } catch (error) {
+      console.error("Error checking sync status:", error);
+      res.status(500).json({ message: "Failed to check sync status" });
+    }
+  });
+
   app.get('/api/settlements', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;

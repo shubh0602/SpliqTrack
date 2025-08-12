@@ -34,9 +34,10 @@ export class CurrencyService {
   async getExchangeRate(fromCurrency: string, toCurrency: string): Promise<number> {
     if (fromCurrency === toCurrency) return 1;
 
+    let cachedRate: any[] = [];
     try {
       // First check if we have a cached rate in database
-      const cachedRate = await db
+      cachedRate = await db
         .select()
         .from(exchangeRates)
         .where(and(
@@ -64,7 +65,7 @@ export class CurrencyService {
       console.error("Error getting exchange rate:", error);
       
       // If API fails, return cached rate if available, otherwise return 1
-      if (cachedRate && cachedRate.length > 0) {
+      if (cachedRate.length > 0) {
         return parseFloat(cachedRate[0].rate);
       }
       return 1;

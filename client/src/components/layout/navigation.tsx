@@ -10,6 +10,7 @@ export default function Navigation() {
     { path: "/", label: "Dashboard", icon: "fas fa-home" },
     { path: "/groups", label: "Groups", icon: "fas fa-users" },
     { path: "/friends", label: "Friends", icon: "fas fa-user-friends" },
+    { path: "/analytics", label: "Analytics", icon: "fas fa-chart-bar" },
   ];
 
   return (
@@ -51,7 +52,7 @@ export default function Navigation() {
               ) : (
                 <div className="w-8 h-8 bg-cred-gradient rounded-full flex items-center justify-center">
                   <span className="text-sm font-medium">
-                    {(user?.firstName?.[0] || '') + (user?.lastName?.[0] || '')}
+                    {((user?.firstName && user.firstName[0]) || '') + ((user?.lastName && user.lastName[0]) || '')}
                   </span>
                 </div>
               )}

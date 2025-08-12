@@ -9,6 +9,8 @@ import Landing from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
 import Groups from "@/pages/groups";
 import Friends from "@/pages/friends";
+import Analytics from "@/pages/analytics";
+import OfflineIndicator from "@/components/layout/offline-indicator";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -22,6 +24,7 @@ function Router() {
           <Route path="/" component={Dashboard} />
           <Route path="/groups" component={Groups} />
           <Route path="/friends" component={Friends} />
+          <Route path="/analytics" component={Analytics} />
         </>
       )}
       <Route component={NotFound} />
@@ -35,6 +38,7 @@ function App() {
       <TooltipProvider>
         <Toaster />
         <Router />
+        <OfflineIndicator />
       </TooltipProvider>
     </QueryClientProvider>
   );
