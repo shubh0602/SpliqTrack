@@ -221,18 +221,17 @@ export class DatabaseStorage implements IStorage {
     group: Group | null;
     splits: (ExpenseSplit & { user: User })[];
   })[]> {
-    let query = db
+    const baseQuery = db
       .select()
       .from(expenses)
       .leftJoin(expenseCategories, eq(expenses.categoryId, expenseCategories.id))
       .innerJoin(users, eq(expenses.paidBy, users.id))
       .leftJoin(groups, eq(expenses.groupId, groups.id))
-      .innerJoin(expenseSplits, eq(expenses.id, expenseSplits.expenseId))
-      .where(eq(expenseSplits.userId, userId));
+      .innerJoin(expenseSplits, eq(expenses.id, expenseSplits.expenseId));
 
-    if (groupId) {
-      query = query.where(eq(expenses.groupId, groupId));
-    }
+    const query = groupId 
+      ? baseQuery.where(and(eq(expenseSplits.userId, userId), eq(expenses.groupId, groupId)))
+      : baseQuery.where(eq(expenseSplits.userId, userId));
 
     const result = await query.orderBy(desc(expenses.createdAt));
 
@@ -264,7 +263,7 @@ export class DatabaseStorage implements IStorage {
     return Array.from(expenseMap.values());
   }
 
-  async createExpense(userId: string, expense: InsertExpense, splits: InsertExpenseSplit[]): Promise<Expense> {
+  async createExpense(userId: string, expense: InsertExpense, splits: Omit<InsertExpenseSplit, 'expenseId'>[]): Promise<Expense> {
     const [newExpense] = await db
       .insert(expenses)
       .values({

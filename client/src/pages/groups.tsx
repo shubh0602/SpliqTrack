@@ -214,7 +214,7 @@ export default function Groups() {
       <CreateGroupModal 
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        onSubmit={(data) => createGroupMutation.mutate(data)}
+        onSubmit={(data) => createGroupMutation.mutate({ ...data, description: data.description || "" })}
         isLoading={createGroupMutation.isPending}
       />
 

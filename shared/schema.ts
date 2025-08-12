@@ -1,6 +1,7 @@
 import { sql, relations } from 'drizzle-orm';
 import {
   index,
+  integer,
   jsonb,
   pgTable,
   timestamp,
@@ -78,11 +79,13 @@ export const expenses = pgTable("expenses", {
   description: varchar("description", { length: 255 }).notNull(),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   currency: varchar("currency", { length: 3 }).default("USD"),
+  exchangeRate: decimal("exchange_rate", { precision: 10, scale: 6 }).default("1.0"),
   categoryId: uuid("category_id").references(() => expenseCategories.id),
   groupId: uuid("group_id").references(() => groups.id),
   paidBy: varchar("paid_by").notNull().references(() => users.id, { onDelete: "cascade" }),
-  splitType: varchar("split_type", { enum: ["equal", "custom", "percentage"] }).default("equal"),
+  splitType: varchar("split_type", { enum: ["equal", "custom", "percentage", "shares"] }).default("equal"),
   receiptUrl: varchar("receipt_url"),
+  ocrData: jsonb("ocr_data"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -94,6 +97,7 @@ export const expenseSplits = pgTable("expense_splits", {
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   percentage: decimal("percentage", { precision: 5, scale: 2 }),
+  shares: integer("shares").default(1),
   settled: boolean("settled").default(false),
   settledAt: timestamp("settled_at"),
 });
@@ -108,6 +112,38 @@ export const settlements = pgTable("settlements", {
   groupId: uuid("group_id").references(() => groups.id),
   method: varchar("method", { length: 50 }),
   notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Exchange rates table for multi-currency support
+export const exchangeRates = pgTable("exchange_rates", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  fromCurrency: varchar("from_currency", { length: 3 }).notNull(),
+  toCurrency: varchar("to_currency", { length: 3 }).notNull(),
+  rate: decimal("rate", { precision: 10, scale: 6 }).notNull(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Analytics table for spending insights
+export const analytics = pgTable("analytics", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  type: varchar("type", { enum: ["monthly_spending", "category_breakdown", "friend_balance", "group_activity"] }).notNull(),
+  data: jsonb("data").notNull(),
+  periodStart: timestamp("period_start").notNull(),
+  periodEnd: timestamp("period_end").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Offline sync queue for offline mode
+export const syncQueue = pgTable("sync_queue", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  operation: varchar("operation", { enum: ["create", "update", "delete"] }).notNull(),
+  entity: varchar("entity", { enum: ["expense", "group", "friendship", "settlement"] }).notNull(),
+  entityId: varchar("entity_id").notNull(),
+  data: jsonb("data").notNull(),
+  synced: boolean("synced").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -209,6 +245,14 @@ export const insertUserSchema = createInsertSchema(users).pick({
   profileImageUrl: true,
 });
 
+export const upsertUserSchema = createInsertSchema(users).pick({
+  id: true,
+  email: true,
+  firstName: true,
+  lastName: true,
+  profileImageUrl: true,
+});
+
 export const insertFriendshipSchema = createInsertSchema(friendships).pick({
   friendId: true,
 });
@@ -229,17 +273,24 @@ export const insertExpenseSchema = createInsertSchema(expenses).pick({
   description: true,
   amount: true,
   currency: true,
+  exchangeRate: true,
   categoryId: true,
   groupId: true,
   splitType: true,
   receiptUrl: true,
+  ocrData: true,
 });
+
+export const insertExchangeRateSchema = createInsertSchema(exchangeRates);
+export const insertAnalyticsSchema = createInsertSchema(analytics);
+export const insertSyncQueueSchema = createInsertSchema(syncQueue);
 
 export const insertExpenseSplitSchema = createInsertSchema(expenseSplits).pick({
   expenseId: true,
   userId: true,
   amount: true,
   percentage: true,
+  shares: true,
 });
 
 export const insertSettlementSchema = createInsertSchema(settlements).pick({
@@ -252,7 +303,7 @@ export const insertSettlementSchema = createInsertSchema(settlements).pick({
 });
 
 // Types
-export type UpsertUser = z.infer<typeof insertUserSchema>;
+export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertFriendship = z.infer<typeof insertFriendshipSchema>;
 export type Friendship = typeof friendships.$inferSelect;
@@ -267,3 +318,6 @@ export type InsertExpenseSplit = z.infer<typeof insertExpenseSplitSchema>;
 export type ExpenseSplit = typeof expenseSplits.$inferSelect;
 export type InsertSettlement = z.infer<typeof insertSettlementSchema>;
 export type Settlement = typeof settlements.$inferSelect;
+export type ExchangeRate = typeof exchangeRates.$inferSelect;
+export type Analytics = typeof analytics.$inferSelect;
+export type SyncQueue = typeof syncQueue.$inferSelect;

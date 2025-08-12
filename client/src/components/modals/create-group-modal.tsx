@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 
 const groupSchema = z.object({
   name: z.string().min(1, "Group name is required"),
-  description: z.string().optional(),
+  description: z.string().transform(val => val || ""),
 });
 
 type GroupForm = z.infer<typeof groupSchema>;
