@@ -1,0 +1,120 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 4%);
+  --foreground: hsl(0, 0%, 98%);
+  --card: hsl(0, 0%, 10%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --popover: hsl(0, 0%, 4%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --primary: hsl(251, 91%, 65%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(0, 0%, 10%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --muted: hsl(0, 0%, 10%);
+  --muted-foreground: hsl(0, 0%, 64%);
+  --accent: hsl(0, 0%, 16%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(356, 91%, 54%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --border: hsl(0, 0%, 20%);
+  --input: hsl(0, 0%, 16%);
+  --ring: hsl(251, 91%, 65%);
+  --chart-1: hsl(251, 91%, 65%);
+  --chart-2: hsl(159, 100%, 36%);
+  --chart-3: hsl(42, 93%, 56%);
+  --chart-4: hsl(147, 79%, 42%);
+  --chart-5: hsl(341, 75%, 51%);
+  --sidebar: hsl(0, 0%, 10%);
+  --sidebar-foreground: hsl(0, 0%, 98%);
+  --sidebar-primary: hsl(251, 91%, 65%);
+  --sidebar-primary-foreground: hsl(0, 0%, 100%);
+  --sidebar-accent: hsl(0, 0%, 16%);
+  --sidebar-accent-foreground: hsl(0, 0%, 98%);
+  --sidebar-border: hsl(0, 0%, 20%);
+  --sidebar-ring: hsl(251, 91%, 65%);
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-serif: Georgia, serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius: 1.3rem;
+  --cred-dark: hsl(0, 0%, 4%);
+  --cred-gray: hsl(0, 0%, 10%);
+  --cred-light: hsl(0, 0%, 16%);
+  --cred-purple: hsl(251, 91%, 65%);
+  --cred-blue: hsl(272, 87%, 69%);
+  --cred-green: hsl(159, 100%, 36%);
+}
+
+.dark {
+  --background: hsl(0, 0%, 4%);
+  --foreground: hsl(0, 0%, 98%);
+  --card: hsl(0, 0%, 10%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --popover: hsl(0, 0%, 4%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --primary: hsl(251, 91%, 65%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(0, 0%, 10%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --muted: hsl(0, 0%, 10%);
+  --muted-foreground: hsl(0, 0%, 64%);
+  --accent: hsl(0, 0%, 16%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(356, 91%, 54%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --border: hsl(0, 0%, 20%);
+  --input: hsl(0, 0%, 16%);
+  --ring: hsl(251, 91%, 65%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: var(--font-sans);
+  }
+}
+
+@layer utilities {
+  .bg-cred-dark {
+    background-color: var(--cred-dark);
+  }
+  
+  .bg-cred-gray {
+    background-color: var(--cred-gray);
+  }
+  
+  .bg-cred-light {
+    background-color: var(--cred-light);
+  }
+  
+  .text-cred-purple {
+    color: var(--cred-purple);
+  }
+  
+  .text-cred-blue {
+    color: var(--cred-blue);
+  }
+  
+  .text-cred-green {
+    color: var(--cred-green);
+  }
+  
+  .bg-cred-gradient {
+    background: linear-gradient(135deg, var(--cred-purple) 0%, var(--cred-blue) 100%);
+  }
+  
+  .bg-green-gradient {
+    background: linear-gradient(135deg, var(--cred-green) 0%, hsl(147, 79%, 42%) 100%);
+  }
+  
+  .bg-dark-gradient {
+    background: linear-gradient(135deg, var(--cred-gray) 0%, var(--cred-light) 100%);
+  }
+}
